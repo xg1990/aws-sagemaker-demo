@@ -18,6 +18,7 @@ Before successfully runing this code, you may need to fill in your personal conf
 
 ``` bash
 cd terraform
+terraform init # for the first time
 terraform apply
 terraform output --json > ../sagemaker/cloud_config.json
 cd ..
@@ -27,12 +28,6 @@ cd ..
 
 ``` bash
 python data/generate.py --output data/data.csv
-```
-
-### Upload data to s3 bucket
-
-``` bash
-aws s3 cp data/data.csv s3://$(cd terraform && terraform output s3bucket)/
 ```
 
 ## Test in local environment
@@ -46,11 +41,25 @@ python sagemaker/jobsubmit.py --local
 ``` bash
 curl --location --request POST '127.0.0.1:8080/invocations' \
      --header 'Content-Type: application/json' \
-     --data-raw '[[1,2,3,4,5,6,7,8,19,10],[1,2,3,4,5,6,7,8,19,10]]'
+     --data-raw '[[1,2,3,4,5,6,7,8,19,10],[1,2,3,4,5,6,7,8,9,10]]'
+```
+
+### Upload data to s3 bucket
+
+``` bash
+aws s3 cp data/data.csv s3://$(cd terraform && terraform output s3bucket)/
 ```
 
 ## Submit to AWS cloud
 
 ``` bash
 python sagemaker/jobsubmit.py
+```
+
+## Clean up Cloud environment
+
+```bash
+cd terraform
+terraform destroy
+cd ..
 ```

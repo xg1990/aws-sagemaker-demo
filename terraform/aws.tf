@@ -3,8 +3,6 @@ provider "aws" {
 }
 
 resource "aws_iam_role" "sagemaker_role" {
-  name = "demo_role"
-
   assume_role_policy = <<EOF
 {
       "Version": "2012-10-17",
@@ -28,7 +26,6 @@ resource "aws_iam_role_policy_attachment" "attach-SageMakerFullAccess" {
 }
 
 resource "aws_s3_bucket" "bucket" {
-  bucket = "my-sagemaker-demo-bucket"
 }
 
 output "sagemaker_role_id" {

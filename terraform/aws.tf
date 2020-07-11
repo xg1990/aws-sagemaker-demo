@@ -26,6 +26,7 @@ resource "aws_iam_role_policy_attachment" "attach-SageMakerFullAccess" {
 }
 
 resource "aws_s3_bucket" "bucket" {
+  force_destroy = true # Do not use this for production environment
 }
 
 output "sagemaker_role_id" {

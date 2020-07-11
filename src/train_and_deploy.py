@@ -48,8 +48,7 @@ import os
 
 import pandas as pd
 
-import sklearn
-
+import sklearn.datasets
 from sklearn import linear_model
 
 import numpy as np
@@ -65,18 +64,12 @@ from six import StringIO, BytesIO
 # matplotlib is not available 
 # from matplotlib import pyplot as plt
 
-from sklearn.externals import joblib
+import joblib
 import json 
+import glob
 
 from sagemaker_containers.beta.framework import (
     content_types, encoders, env, modules, transformer, worker)
-
-
-fn = 'sample_data.json'
-
-MA_list = [50, 100, 200, 300, 400, 800, 1600]
-intput_col = ["MA-{}".format(ma_lag) for ma_lag in MA_list[:-1]]
-benchmark_col = 'MA-1600'
 
 
 '''
@@ -96,9 +89,7 @@ def input_fn(request_body, request_content_type):
         return array
     elif request_content_type == 'application/json':
         jsondata = json.load(StringIO(request_body))
-        normalized_data, benchmark_data = process_input_data(jsondata)
-        # print("normalized_data=",normalized_data)
-        return normalized_data, benchmark_data
+        return jsondata
     else:
         # Handle other content-types here or raise an Exception
         # if the content type is not supported.
@@ -128,52 +119,30 @@ def predict_fn(input_data, model):
 
         rest of features either one hot encoded or standardized
     """
-    normalized_data, benchmark_data = input_data
+
+    prediction = model.predict(input_data)
     
-    prediction = model.predict(normalized_data)
-    
-    output = np.array(prediction) * np.array(benchmark_data)
-    
-    return {'prediction-base-time': str(normalized_data.index[-1]), 
-            'predicted-value': output[-1]}
+    return prediction.tolist()
 
 def model_fn(model_dir):
     clf = joblib.load(os.path.join(model_dir, "model.joblib"))
     return clf
 
-def process_input_data(cmcjsondata, for_training = False):
-    raw_data = pd.DataFrame(cmcjsondata)
-    dat = pd.DataFrame(list(raw_data['price_usd']), columns=['timestamp', 'usd'])
-    dat['dt_utc'] = pd.to_datetime(dat['timestamp']*1e6)
-    dat = dat.set_index('dt_utc')
-    resampled_data = dat['usd'].resample('30S').mean().interpolate('linear')
+def prepare_training_data():
+    return sklearn.datasets.make_classification(
+        n_samples=1000,
+        n_features=10,
+        n_classes=2,
+    )
 
-    feature = {}
 
-    if for_training:
-        Y = resampled_data.rolling(2880).median().shift(-2879) # next 24 hour
-        feature['Y'] = Y
-
-    for ma_lag in MA_list:
-        feature["MA-{}".format(ma_lag)] = resampled_data.rolling(ma_lag).mean()
-
-    data = pd.DataFrame(feature).dropna()
-    benchmark_data = data[benchmark_col].copy()
-    normalized_data = data.div(data[benchmark_col], axis=0)
-    
-    _col = intput_col + (['Y'] if for_training else [])
-
-    return normalized_data[_col], benchmark_data
-    
 def run_training(args):
-
-    with open(os.path.join(args.train, fn)) as fp:
-        jsondata = json.load(fp)
-    normalized_data, _ = process_input_data(jsondata, for_training = True)
-
+    training_files = glob.glob(os.path.join(args.train, "*.csv"))
+    print("training_files=", training_files)
+    X,y = prepare_training_data()
     model = linear_model.Ridge()
-    model.fit(normalized_data[intput_col], normalized_data['Y'])
-
+    model.fit(X, y)
+    print(f"train:score={model.score(X,y)}")
     joblib.dump(model, os.path.join(args.model_dir, "model.joblib"))
 
 

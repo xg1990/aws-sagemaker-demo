@@ -1,0 +1,5 @@
+.vscode
+data/data.csv
+__pycache__
+sagemaker/cloud_config.json
+terraform/.terraform/

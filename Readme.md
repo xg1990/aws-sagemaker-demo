@@ -56,9 +56,15 @@ aws s3 cp data/data.csv s3://$(cd terraform && terraform output s3bucket)/
 python sagemaker/jobsubmit.py
 ```
 
+### Invocate Remote endpoint
+
+``` bash
+python sagemaker/invoke.py
+```
+
 ## Clean up Cloud environment
 
-```bash
+``` bash
 cd terraform
 terraform destroy
 cd ..

@@ -25,6 +25,11 @@ resource "aws_iam_role_policy_attachment" "attach-SageMakerFullAccess" {
     policy_arn = "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
 }
 
+resource "aws_iam_role_policy_attachment" "attach-S3FullAccess" {
+    role       = "${aws_iam_role.sagemaker_role.name}"
+    policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
 resource "aws_s3_bucket" "bucket" {
   force_destroy = true # Do not use this for production environment
 }

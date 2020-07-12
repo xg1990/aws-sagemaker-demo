@@ -26,7 +26,6 @@ def main(args):
     sklearn_estimator.deploy(
         instance_type='local' if args.local else 'ml.t2.medium',
         initial_instance_count=1,
-        endpoint_name='demo-endpoint',
     )
 
 

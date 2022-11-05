@@ -3,7 +3,7 @@
 This is the source code for the Medium article
 https://medium.com/weareservian/machine-learning-on-aws-sagemaker-53e1a5e218d9
 
-Before successfully runing this code, you may need to fill in your personal configurations (e.g. S3 bucket name)
+Before successfully running this code, you may need to fill in your personal configurations (e.g. S3 bucket name)
 
 ## Pre-requisite
 
@@ -13,6 +13,10 @@ Before successfully runing this code, you may need to fill in your personal conf
 * Terraform (optional)
 
 ## Setup AWS resources
+By default AWS region `ap-southeast-2` is used. Change terraform config if necessary
+```
+export AWS_DEFAULT_REGION=ap-southeast-2
+```
 
 ``` bash
 cd terraform
@@ -45,7 +49,7 @@ curl --location --request POST '127.0.0.1:8080/invocations' \
 ### Upload data to s3 bucket
 
 ``` bash
-aws s3 cp data/data.csv s3://$(cd terraform && terraform output s3bucket)/
+aws s3 cp data/data.csv s3://$(cd terraform && terraform output s3bucket | tr -d '"')/
 ```
 
 ## Submit to AWS cloud

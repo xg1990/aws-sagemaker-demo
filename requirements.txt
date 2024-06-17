@@ -7,4 +7,4 @@ numpy==1.22.0
 protobuf==3.20.2
 pyyaml==5.4
 sagemaker_containers==2.8.6.post2
-scikit_learn==0.23.1
+scikit_learn==1.5.0
